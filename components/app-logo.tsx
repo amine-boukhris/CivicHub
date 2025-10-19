@@ -12,7 +12,7 @@ export default function AppLogo() {
         transition={{ type: "spring", stiffness: 400 }}
         className="rounded flex items-center justify-center"
       >
-        <MapPin className="size-6 text-[#2E5BFF]" />
+        <MapPin className="size-6 text-black" />
       </motion.div>
       <h1 className="text-xl font-semibold text-foreground">CivicHub</h1>
     </Link>

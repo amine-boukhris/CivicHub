@@ -1,6 +1,6 @@
 import type React from "react";
 import type { Metadata } from "next";
-import { Recursive, Inter } from "next/font/google";
+import { Recursive, Inter, Manrope, Source_Serif_4, Noto_Serif } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -11,6 +11,16 @@ const inter = Inter({
 const recursive = Recursive({
   subsets: ["latin"],
   variable: "--font-recursive",
+});
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-manrope",
+});
+
+const source_serif_4 = Noto_Serif({
+  subsets: ["latin"],
+  variable: "--font-source-serif",
 });
 
 export const metadata: Metadata = {

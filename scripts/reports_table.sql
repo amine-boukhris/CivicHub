@@ -34,14 +34,6 @@ CREATE TABLE public.reports (
   resolved_at TIMESTAMPTZ,
   resolution_notes TEXT,
 
-  -- might add this later, but for now don't want extra complexity
-  -- is_anonymous BOOLEAN DEFAULT false,
-  -- is_pinned BOOLEAN DEFAULT false,
-
-  -- also might add comments but it doesn't feel right for this app
-  -- comment_count INT DEFAULT 0,
-  -- I'll still create the comments table just in case
-
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 )
