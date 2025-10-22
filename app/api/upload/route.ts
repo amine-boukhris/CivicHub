@@ -1,28 +1,31 @@
-import { put } from "@vercel/blob"
-import { type NextRequest, NextResponse } from "next/server"
+import { put } from "@vercel/blob";
+import { type NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData()
-    const file = formData.get("file") as File
+    const formData = await request.formData();
+    const file = formData.get("file") as File;
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 })
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     // Upload to Vercel Blob
-    const blob = await put(file.name, file, {
+    const uniqueName = `${Date.now()}-${randomUUID()}-${file.name}`;
+
+    const blob = await put(uniqueName, file, {
       access: "public",
-    })
+    });
 
     return NextResponse.json({
       url: blob.url,
-      filename: file.name,
+      filename: uniqueName,
       size: file.size,
       type: file.type,
-    })
+    });
   } catch (error) {
-    console.error("Upload error:", error)
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 })
+    console.error("Upload error:", error);
+    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
 }

@@ -2,7 +2,7 @@
 CREATE OR REPLACE FUNCTION public.nearby_communities(
   user_lat DECIMAL,
   user_lng DECIMAL,
-  distance_km INTEGER DEFAULT 50
+  max_distance_km INTEGER DEFAULT 50
 ) RETURNS TABLE (
   id UUID,
   name TEXT,
@@ -29,17 +29,18 @@ BEGIN
         c.location,
         ST_SetSRID(ST_MakePoint(user_lng, user_lat), 4326)::geography
       ) / 1000
-    )::DECIMAL as distance_km
+    )::DECIMAL AS distance_km
   FROM public.communities c
   WHERE ST_DWithin(
     c.location,
     ST_SetSRID(ST_MakePoint(user_lng, user_lat), 4326)::geography,
-    distance_km * 1000
+    max_distance_km * 1000
   )
   AND c.is_active = true
   ORDER BY distance_km;
 END;
 $$ LANGUAGE plpgsql;
+
 
 -- Function: Find reports in community
 CREATE OR REPLACE FUNCTION public.community_reports(

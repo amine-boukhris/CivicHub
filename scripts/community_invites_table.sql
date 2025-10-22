@@ -11,9 +11,9 @@ CREATE TABLE public.community_invites (
   accepted_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
 
 
-  create_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
   accepted_at TIMESTAMPTZ,
-  expires_at TIMESTAMPTZ NOW() + INTERVAL '30 days',
+  expires_at TIMESTAMPTZ DEFAULT NOW() + INTERVAL '30 days',
 
   UNIQUE(community_id, email)
 );

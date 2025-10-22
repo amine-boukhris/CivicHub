@@ -126,7 +126,7 @@ export default function LandingPage() {
           </form>
           <p className="text-center text-black/50 text-xs lg:text-sm font-manrope font-medium tracking-tight mt-3 lg:mt-4">
             Or{" "}
-            <Link href={"/create-community"} className="text-blue-600/70 underline">
+            <Link href={"/communities/new-community"} className="text-blue-600/70 underline">
               create
             </Link>{" "}
             it if you didn't find it

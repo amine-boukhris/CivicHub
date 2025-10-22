@@ -12,7 +12,7 @@ export async function GET() {
 
     if (error) throw error;
 
-    return NextResponse.json(communities)
+    return NextResponse.json(communities);
   } catch (error) {
     console.error("Error fetching communitites:", error);
     return NextResponse.json({ error: "Failed to fetch communities" }, { status: 500 });
@@ -27,6 +27,9 @@ interface Body {
   address?: string;
   radius_km?: number;
   category: "city" | "neighborhood" | "district" | "campus" | "region";
+  iconUrl?: string;
+  bannerUrl?: string;
+  slug: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -42,12 +45,21 @@ export async function POST(request: NextRequest) {
     }
 
     const body: Body = await request.json();
-    // what do we expect from the user, aka the creator of this community
-    // they must provide the required attributes for a community
-    const { name, description, center_lat, center_lng, address, radius_km, category } = body;
+    const {
+      name,
+      description,
+      center_lat,
+      center_lng,
+      address,
+      radius_km,
+      category,
+      iconUrl,
+      bannerUrl,
+      slug,
+    } = body;
 
-    if (!name || !center_lat || !center_lng) {
-      return NextResponse.json({ error: "Name and coordinates are required" }, { status: 400 });
+    if (!name || !description || !center_lat || !center_lng || !radius_km || !category || !slug) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     const location = `POINT(${center_lng} ${center_lat})`;
@@ -59,6 +71,14 @@ export async function POST(request: NextRequest) {
         center_lat,
         center_lng,
         location,
+        description,
+        address,
+        radius_km,
+        category,
+        admin_id: user.id,
+        icon_url: iconUrl,
+        banner_url: bannerUrl,
+        slug,
       })
       .select()
       .single();

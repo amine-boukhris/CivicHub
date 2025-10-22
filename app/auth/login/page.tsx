@@ -36,6 +36,7 @@ export default function LoginPage() {
         password,
       })
 
+      console.log(error)
       if (error) throw error
 
       // Redirect to map page after successful login
