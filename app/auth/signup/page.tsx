@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin } from "lucide-react";
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@/lib/supabase/client";
 import { motion } from "framer-motion";
 
 export default function SignUpPage() {
@@ -21,11 +21,7 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
-
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const supabase = createClient()
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,16 +41,15 @@ export default function SignUpPage() {
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo:
-            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/map`,
-        },
-      });
+      let { data, error } = await supabase.auth.signUp({
+        email: 'minoplay07@gmail.com',
+        password: 'MINO2007@typeshit'
+      })
 
-      if (error) throw error;
+      if (error) {
+        console.error(error);
+        return;
+      }
 
       setSuccess(true);
     } catch (err: any) {

@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/card";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import LandingPageMenu from "@/components/landing-page-menu";
+import { shareLink} from "@/lib/utils";
 
 // Dynamically import the map component to avoid SSR issues
 const MapView = dynamic(() => import("@/components/map-view"), { ssr: false });
@@ -34,11 +36,16 @@ export interface Report {
   description: string;
   category: string;
   status: string;
-  latitude: number;
-  longitude: number;
+  lat: number;
+  lng: number;
   address: string | null;
   image_url: string | null;
   created_at: string;
+  updated_at: string;
+  resolved_at: string;
+  resolution_notes: string;
+  upvote_count: number;
+  view_count: number
 }
 
 export interface Community {
@@ -50,7 +57,7 @@ export interface Community {
   // Location
   center_lat: number;
   center_lng: number;
-  location: unknown | null; // Supabase returns geography as `unknown` or `string`, can cast to { lat: number; lng: number }
+  location: string | unknown; // Supabase returns geography as `unknown` or `string`, can cast to { lat: number; lng: number }
   address: string | null;
   radius_km: number;
 
@@ -69,7 +76,7 @@ export interface Community {
   is_active: boolean;
 
   // Timestamps
-  created_at: string; // Supabase returns TIMESTAMPTZ as ISO strings
+  created_at: string;
   updated_at: string;
 }
 
@@ -111,7 +118,7 @@ export default function CommunityPage({ params }: { params: { slug: string } }) 
       const { slug } = params;
       const response = await fetch(`/api/communities/${slug}/reports`);
       const data = await response.json();
-      setReports(data.data || []);
+      setReports(data.reports);
     } catch (error) {
       console.error("Error fetching reports:", error);
     } finally {
@@ -127,7 +134,8 @@ export default function CommunityPage({ params }: { params: { slug: string } }) 
       const data: { community: Community; isMember: boolean; isAdmin: boolean } =
         await response.json();
       if (!data.community) {
-        throw new Error("Community not found");
+        console.error("Community not found");
+        return;
       }
       setCommunity(data.community);
       setIsMember(data.isMember);
@@ -171,27 +179,7 @@ export default function CommunityPage({ params }: { params: { slug: string } }) 
     }
   };
 
-  const handleCreateReport = () => {
-    router.push(`/communities/${community?.slug}/report`);
-  };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: community?.name,
-          text: community?.description || "",
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.log("Share cancelled");
-      }
-    } else {
-      // Fallback - copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
-      alert("Link copied to clipboard!");
-    }
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -236,8 +224,10 @@ export default function CommunityPage({ params }: { params: { slug: string } }) 
     }
   };
 
+  if (!community) return null;
+
   return (
-    <div className="min-h-screen bg-cream-lighter flex flex-col">
+    <div className="relative min-h-screen bg-cream-lighter flex flex-col">
       {/* Banner */}
       <div className="relative h-[240px] lg:h-[300px] bg-cream-light overflow-hidden">
         {community?.banner_url ? (
@@ -262,34 +252,14 @@ export default function CommunityPage({ params }: { params: { slug: string } }) 
 
         {/* Share Button */}
         <button
-          onClick={handleShare}
-          className="absolute top-6 left-6 p-2.5 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors"
+          onClick={() => shareLink(window.location.href, community.name, community.description || "")}
+          className="absolute top-6 right-6 p-2.5 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors"
         >
           <Share2 className="w-5 h-5 text-black" />
         </button>
       </div>
 
-      {/* Header */}
-      {/* <header className="border-b border-border bg-white z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <AppLogo />
-          </div>
-          <div className="flex items-center gap-2">
-            <Link href={`/communities/${params.slug}/report`}>
-              <Button size="sm" className="bg-[#2E5BFF] hover:bg-[#1E3A8A]">
-                Report Issue
-              </Button>
-            </Link>
-            <Link href="/communities">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Communities
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header> */}
+      <LandingPageMenu />
 
       {/* Main Content */}
       <div className="container max-w-[1200px] mx-auto px-4">
@@ -308,7 +278,7 @@ export default function CommunityPage({ params }: { params: { slug: string } }) 
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-5xl">
-                      {categoryEmojis[community.category]}
+                      t
                     </div>
                   )}
                 </div>
@@ -316,18 +286,13 @@ export default function CommunityPage({ params }: { params: { slug: string } }) 
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-start gap-3 mb-3">
+                <div className="flex items-end gap-3 mb-3">
                   <h1 className="text-3xl lg:text-4xl font-manrope font-bold tracking-tight text-black">
                     {community?.name}
                   </h1>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-manrope font-semibold tracking-tight border ${
-                      categoryColors[community.category]
-                    }`}
-                  >
-                    {categoryEmojis[community.category]}{" "}
-                    {community.category.charAt(0).toUpperCase() + community.category.slice(1)}
-                  </span>
+                  <p className="px-3 py-1 bg-cream-light text-center  rounded-full text-xs tracking-tight font-manrope leading-5 font-bold">
+                    {community?.category}
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-black/60 font-manrope font-medium mb-4">
@@ -349,7 +314,7 @@ export default function CommunityPage({ params }: { params: { slug: string } }) 
                       </span>
                     </div>
                     <div className="text-2xl font-manrope font-bold text-black">
-                      {community.member_count.toLocaleString()}
+                      {community.member_count}
                     </div>
                   </div>
 
@@ -361,31 +326,7 @@ export default function CommunityPage({ params }: { params: { slug: string } }) 
                       </span>
                     </div>
                     <div className="text-2xl font-manrope font-bold text-black">
-                      {stats.total_reports}
-                    </div>
-                  </div>
-
-                  <div className="bg-cream-lighter rounded-[12px] p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <TrendingUp className="w-4 h-4 text-black/40" />
-                      <span className="text-xs text-black/50 font-manrope font-semibold tracking-tight">
-                        This Week
-                      </span>
-                    </div>
-                    <div className="text-2xl font-manrope font-bold text-black">
-                      {stats.reports_last_7_days}
-                    </div>
-                  </div>
-
-                  <div className="bg-cream-lighter rounded-[12px] p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <CheckCircle className="w-4 h-4 text-black/40" />
-                      <span className="text-xs text-black/50 font-manrope font-semibold tracking-tight">
-                        Resolved
-                      </span>
-                    </div>
-                    <div className="text-2xl font-manrope font-bold text-black">
-                      {stats.resolved_reports}
+                      {community.report_count}
                     </div>
                   </div>
                 </div>
@@ -407,7 +348,7 @@ export default function CommunityPage({ params }: { params: { slug: string } }) 
                   ) : (
                     <>
                       <button
-                        onClick={handleCreateReport}
+                        onClick={() => router.push(`/communities/${community?.slug}/report`)}
                         className="px-6 py-3 bg-black text-white rounded-[12px] text-sm font-manrope font-semibold tracking-tight hover:bg-black/90 transition-all flex items-center gap-2"
                       >
                         <Plus className="w-4 h-4" />
@@ -605,7 +546,7 @@ export default function CommunityPage({ params }: { params: { slug: string } }) 
                       className="w-full h-64 object-cover"
                       width={400}
                       height={160}
-                      unoptimized={report.image_url ? false : true}
+                      unoptimized={!report.image_url}
                     />
                   )}
                   <CardHeader className="pb-2">

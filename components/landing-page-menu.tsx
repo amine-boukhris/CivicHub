@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
-import { LogInIcon, LogOutIcon, MapPinIcon, SettingsIcon, UserIcon } from "lucide-react";
+import { LogOutIcon, MapPinIcon, SettingsIcon, UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -37,7 +37,7 @@ export default function LandingPageMenu() {
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/");
-    router.refresh();
+    window.location.reload();
   };
 
   const topBarVariants = {
@@ -136,14 +136,11 @@ export default function LandingPageMenu() {
             </ul>
             <div className="mt-6">
               {user ? (
-                <button className="rounded-3xl bg-black hover:bg-bluish-pink text-white hover:text-black p-4 cursor-pointer font-semibold w-full transition-colors">
-                  <div
-                    onClick={handleLogout}
-                    className="cursor-pointer text-red-600 focus:text-red-600"
-                  >
+                <button className="rounded-3xl bg-white text-black  hover:bg-black hover:text-white border border-black p-4 cursor-pointer font-semibold w-full transition-colors flex items-center justify-center"
+                        onClick={handleLogout}
+                >
                     <LogOutIcon className="mr-2 h-4 w-4" />
                     <span>Log out</span>
-                  </div>
                 </button>
               ) : (
                 <Link href="/auth/login">

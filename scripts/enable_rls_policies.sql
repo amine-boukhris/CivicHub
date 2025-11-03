@@ -61,7 +61,7 @@ CREATE POLICY "Anyone can view reports in joined communities"
   ON public.reports FOR SELECT USING (
     community_id IN (
       SELECT community_id FROM community_members
-      WHERE user_id = auth.uid()
+      WHERE auth.uid() = user_id
     )
   );
 

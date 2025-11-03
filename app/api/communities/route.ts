@@ -62,6 +62,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    const {data: existingSlug, error: existingSlugError} = await supabase.from("communities").select("id").eq('slug', slug)
+
+    if (existingSlug) {
+      return NextResponse.json({error: "Slug not unique"}, {status: 400})
+    }
+
     const location = `POINT(${center_lng} ${center_lat})`;
 
     const { data: community, error } = await supabase

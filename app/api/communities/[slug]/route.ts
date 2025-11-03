@@ -16,7 +16,10 @@ export async function GET(request: NextRequest, { params }: { params: { slug: st
       .eq("slug", communitySlug)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error(error)
+      return NextResponse.json({ error: "Failed to fetch community" }, { status: 500 });
+    }
 
     let isMember = false;
     let isAdmin = false;
